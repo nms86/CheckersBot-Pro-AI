@@ -1,3 +1,4 @@
+from enum import Enum
 import pygame
 from board_graphics import Graphics
 
