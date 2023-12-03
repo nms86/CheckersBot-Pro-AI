@@ -1,3 +1,4 @@
+import time
 import pygame
 from board_graphics import Graphics
 
@@ -32,6 +33,7 @@ class Game:
         # draw original board
         Graphics.draw_board(self.board_array)
 
+        print(self.get_valid_moves(5, 2))
         # loop while the window is not closed
         while self.status != 0:
             self.event_loop()
@@ -44,10 +46,19 @@ class Game:
     """
 
     def event_loop(self):
+        # check if the current player has any moves left
+        if self.is_win_or_lose():
+            # game over
+            time.sleep(5)
+            self.status = 0
+            return
+
         # AI MOVE:
         if self.status == 2:
             Graphics.draw_board(self.board_array)
             self.make_AI_move()
+            # TODO: uncomment:
+            # self.status = 1
             return
 
         # USER MOVE
@@ -85,6 +96,10 @@ class Game:
             self.board_array[x][y] = 1
             self.board_array[self.selected_piece[0]][self.selected_piece[1]] = 0
             self.selected_piece = (-1, -1)
+
+            # Make it the AI move next:
+            # TODO: uncomment:
+            # self.status = 2
         elif self.board_array[x][y] == 1:
             self.selected_piece = (x, y)
 
@@ -94,17 +109,190 @@ class Game:
     """
 
     def is_win_or_lose(self):
-        # TODO
-        # should use the get_valid_moves function
-        return
+        playerPieces = [2, 4]
+        if self.status == 1:
+            playerPieces = [1, 3]
+
+        for i in range(len(self.board_array)):
+            for j in range(len(self.board_array[0])):
+                if (
+                    self.board_array[i][j] in playerPieces
+                    and self.get_valid_moves(i, j) != []
+                ):
+                    return False
+
+        if self.status == 1:
+            print("White has no moves, black wins!")
+        else:
+            print("Black has no moves, white wins!")
+        return True
 
     """
     Returns a list of all 8x8 board arrays that contain a valid move made
     Should use self.status to see whose move it is, either 1 or 2
     """
 
-    def get_valid_moves(self):
+    def get_valid_boards(self):
         # TODO
+        board_list = []
+        for x in range(8):
+            for y in range(8):
+                piece_type = self.board_array[x][y]
+                if self.board_array[x][y] == 1:
+                    new_x = x - 1
+                    left_y = y - 1
+                    right_y = y + 1
+                    if new_x >= 0 and left_y >= 0:
+                        if self.board_array[new_x][left_y] == 0:
+                            newboard = self.board_array.copy()[new_x][left_y] = 1
+                            newboard[x][y] = 0
+
+                    return
+        return
+
+    def get_valid_moves(self, x, y):
+        moves = []
+        if self.board_array[x][y] in (1, 3):  # White Non-king Movement
+            up_x = x - 1
+            left_y = y - 1
+            right_y = y + 1
+            if up_x >= 0 and left_y >= 0:  # Left Diagonal Non-Capture Move
+                if self.board_array[up_x][left_y] == 0:
+                    moves.append((up_x, left_y, []))
+                if self.board_array[up_x][left_y] in (
+                    2,
+                    4,
+                ):  # Left Diagonal Capture Move
+                    if (up_x - 1 >= 0 and left_y - 1 >= 0) and self.board_array[
+                        up_x - 1
+                    ][left_y - 1] == 0:
+                        moves.append((up_x - 1, left_y - 1, [(up_x, left_y)]))
+
+            if up_x >= 0 and right_y < 8:  # Right Diagonal Non-Capture Move
+                if self.board_array[up_x][right_y] == 0:
+                    moves.append((up_x, right_y, []))
+                if self.board_array[up_x][right_y] in (
+                    2,
+                    4,
+                ):  # Right Diagonal Capture Move
+                    if (up_x - 1 >= 0 and right_y + 1 < 8) and self.board_array[
+                        up_x - 1
+                    ][right_y + 1] == 0:
+                        moves.append((up_x - 1, right_y + 1, [(up_x, right_y)]))
+
+        if self.board_array[x][y] == 3:  # White King Movement
+            down_x = x + 1
+            left_y = y - 1
+            right_y = y + 1
+            if down_x >= 0 and left_y >= 0:  # Left Backwards Diagonal Non-Capture Move
+                if self.board_array[down_x][left_y] == 0:
+                    moves.append((down_x, left_y, []))
+                if self.board_array[down_x][left_y] in (
+                    2,
+                    4,
+                ):  # Left Backwards Diagonal Capture Move
+                    if (down_x - 1 >= 0 and left_y - 1 >= 0) and self.board_array[
+                        down_x - 1
+                    ][left_y - 1] == 0:
+                        moves.append((down_x - 1, left_y - 1, [(down_x, left_y)]))
+
+            if down_x >= 0 and right_y < 8:  # Right Backwards Diagonal Non-Capture Move
+                if self.board_array[down_x][right_y] == 0:
+                    moves.append((down_x, right_y, []))
+                if self.board_array[down_x][right_y] in (
+                    2,
+                    4,
+                ):  # Right Backwards Diagonal Capture Move
+                    if (down_x - 1 >= 0 and right_y + 1 < 8) and self.board_array[
+                        down_x - 1
+                    ][right_y + 1] == 0:
+                        moves.append((down_x - 1, right_y + 1, [(down_x, right_y)]))
+
+        if self.board_array[x][y] in (2, 4):  # Black Non-king Movement
+            down_x = x + 1
+            left_y = y - 1
+            right_y = y + 1
+            if down_x < 8 and left_y >= 0:
+                if self.board_array[down_x][left_y] == 0:
+                    moves.append((down_x, left_y, []))  # Left Diagonal Non-Capture Move
+                if self.board_array[down_x][left_y] in (1, 3):
+                    if (down_x + 1 < 8 and left_y - 1 >= 0) and self.board_array[
+                        down_x + 1
+                    ][left_y - 1] == 0:
+                        moves.append(
+                            (down_x + 1, left_y - 1, [(down_x, left_y)])
+                        )  # Left Diagonal Capture Move
+            if down_x < 8 and right_y < 8:
+                if self.board_array[down_x][right_y] == 0:
+                    moves.append(
+                        (down_x, right_y, [])
+                    )  # Right Diagonal Non-Capture Move
+                if self.board_array[down_x][right_y] in (1, 3):
+                    if (down_x + 1 < 8 and right_y + 1 < 8) and self.board_array[
+                        down_x + 1
+                    ][right_y + 1] == 0:
+                        moves.append(
+                            (down_x + 1, right_y + 1, [(down_x, right_y)])
+                        )  # Right Diagonal Capture Move
+
+        if self.board_array[x][y] == 4:  # Black King Movement
+            up_x = x - 1
+            left_y = y - 1
+            right_y = y + 1
+            if up_x >= 0 and left_y >= 0:
+                if self.board_array[up_x][left_y] == 0:
+                    moves.append(
+                        (up_x, left_y, [])
+                    )  # Left Backwards Diagonal Non-Capture Move
+                if self.board_array[up_x][left_y] in (1, 3):
+                    if (up_x - 1 >= 0 and left_y - 1 >= 0) and self.board_array[
+                        up_x - 1
+                    ][left_y - 1] == 0:
+                        moves.append(
+                            (up_x - 1, left_y - 1, [(up_x, left_y)])
+                        )  # Left Backwards Diagonal Capture Move
+            if up_x >= 0 and right_y < 8:
+                if self.board_array[up_x][right_y] == 0:
+                    moves.append(
+                        (up_x, right_y, [])
+                    )  # Right Backwards Diagonal Non-Capture Move
+                if self.board_array[up_x][right_y] in (1, 3):
+                    if (up_x - 1 >= 0 and right_y + 1 < 8) and self.board_array[
+                        up_x - 1
+                    ][right_y + 1] == 0:
+                        moves.append(
+                            (up_x - 1, right_y + 1, [(up_x, right_y)])
+                        )  # Right Backwards Diagonal Capture Move
+
+        return moves
+
+    """
+    Moves a piece to another location on the board if it is a valid move, 
+    and returns nothing if it is not a valid move. Checks if piece is in
+    king position. Updates the board.  
+    """
+
+    def move_piece(self, old_x, old_y, new_x, new_y):
+        if (new_x, new_y) in self.get_valid_moves(old_x, old_y):
+            self.board_array[new_x][new_y] = self.board_array[old_x][old_y]
+            self.board_array[old_x][old_y] = 0
+            self.king_piece(new_x, new_y)
+
+        return
+
+    """
+    Removes a piece from the board at location x, y
+    """
+
+    def remove_piece(self, x, y):
+        self.board_array[x][y] = 0
+        return
+
+    def king_piece(self, x, y):
+        if (self.board_array[x][y]) == 1 and x == 0:
+            self.board_array[x][y] = 3
+        elif (self.board_array[x][y]) == 2 and x == 7:
+            self.board_array[x][y] = 4
         return
 
     """
