@@ -13,11 +13,11 @@ class Game:
 
         # 1 = white, 2 = black, 3 = white king, 4 = black king
         self.board_array = [
-            [0, 2, 0, 2, 0, 2, 0, 2],
-            [2, 0, 0, 0, 2, 0, 2, 0],
-            [0, 2, 0, 2, 0, 2, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 2, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 2, 0, 2, 0],
+            [0, 2, 0, 2, 0, 0, 0, 2],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 2, 0, 2, 0, 0],
             [1, 0, 1, 0, 1, 0, 1, 0],
             [0, 1, 0, 1, 0, 1, 0, 1],
             [1, 0, 1, 0, 1, 0, 1, 0],
@@ -33,7 +33,6 @@ class Game:
         # draw original board
         Graphics.draw_board(self.board_array)
 
-        print(self.get_valid_moves_jumps(5, 2, self.board_array))
         # loop while the window is not closed
         while self.status != 0:
             self.event_loop()
@@ -93,9 +92,20 @@ class Game:
         y = (int)(location[0] / self.board_square_size)
 
         if self.board_array[x][y] == 0 and self.selected_piece != (-1, -1):
-            self.board_array[x][y] = 1
-            self.board_array[self.selected_piece[0]][self.selected_piece[1]] = 0
-            self.selected_piece = (-1, -1)
+            # check if the move is valid:
+            moves = self.get_valid_moves_jumps(
+                self.selected_piece[0], self.selected_piece[1], self.board_array
+            )
+            print(moves)
+            for x1, y1, rm in moves:
+                if x1 == x and y1 == y:
+                    print("making x, y into white: ", x, y)
+                    self.board_array[x][y] = 1
+                    for x_rm, y_rm in rm:
+                        self.board_array[x_rm][y_rm] = 0
+                    self.board_array[self.selected_piece[0]][self.selected_piece[1]] = 0
+                    self.selected_piece = (-1, -1)
+                    break
 
             # Make it the AI move next:
             # TODO: uncomment:
@@ -117,7 +127,7 @@ class Game:
             for j in range(len(self.board_array[0])):
                 if (
                     self.board_array[i][j] in playerPieces
-                    and self.get_valid_moves(i, j, self.board_array) != []
+                    and self.get_valid_moves_jumps(i, j, self.board_array) != []
                 ):
                     return False
 
@@ -144,7 +154,8 @@ class Game:
                     right_y = y + 1
                     if new_x >= 0 and left_y >= 0:
                         if self.board_array[new_x][left_y] == 0:
-                            newboard = self.board_array.copy()[new_x][left_y] = 1
+                            newboard = self.board_array.copy()
+                            newboard[new_x][left_y] = 1
                             newboard[x][y] = 0
 
                     return
@@ -159,20 +170,15 @@ class Game:
         final_moves = []
         single_jump_moves = self.get_valid_moves(x1, y1, board_array)
 
-        for m in single_jump_moves:
-            x2, y2, removed_pieces = m
-            if removed_pieces == []:
-                final_moves.append((x2, y2, removed_pieces))
-                continue
+        for x2, y2, removed_pieces in single_jump_moves:
             final_moves.append((x2, y2, removed_pieces))
-
-            board_array_copy = board_array.copy()
-            board_array_copy[x2][y2] = board_array[x1][y1]
-            second_moves = self.get_valid_moves_jumps(x2, y2, board_array_copy)
-            for m2 in second_moves:
-                x3, y3, removed_pieces2 = m2
-                if m2[1] != []:
-                    final_moves.append((x3, y3, removed_pieces + removed_pieces2))
+            if removed_pieces != []:
+                board_array_copy = board_array.copy()
+                board_array_copy[x2][y2] = board_array[x1][y1]
+                second_moves = self.get_valid_moves_jumps(x2, y2, board_array_copy)
+                for x3, y3, removed_pieces2 in second_moves:
+                    if removed_pieces2 != []:
+                        final_moves.append((x3, y3, removed_pieces + removed_pieces2))
         return final_moves
 
     """
@@ -181,6 +187,7 @@ class Game:
     """
 
     def get_valid_moves(self, x, y, board_array):
+        board_array = board_array.copy()
         moves = []
         if board_array[x][y] in (1, 3):  # White Non-king Movement
             up_x = x - 1
