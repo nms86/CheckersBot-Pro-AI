@@ -1,6 +1,7 @@
 import time
 import pygame
 from board_graphics import Graphics
+from copy import deepcopy
 
 
 class Game:
@@ -17,7 +18,7 @@ class Game:
             [2, 0, 0, 0, 2, 0, 2, 0],
             [0, 2, 0, 2, 0, 2, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 2, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
             [1, 0, 1, 0, 1, 0, 1, 0],
             [0, 1, 0, 1, 0, 1, 0, 1],
             [1, 0, 1, 0, 1, 0, 1, 0],
@@ -93,13 +94,11 @@ class Game:
 
         if self.board_array[x][y] == 0 and self.selected_piece != (-1, -1):
             # check if the move is valid:
-            moves = self.get_valid_moves_jumps(
+            moves = self.get_valid_moves(
                 self.selected_piece[0], self.selected_piece[1], self.board_array
             )
-            print(moves)
             for x1, y1, rm in moves:
                 if x1 == x and y1 == y:
-                    print("making x, y into white: ", x, y)
                     self.board_array[x][y] = 1
                     for x_rm, y_rm in rm:
                         self.board_array[x_rm][y_rm] = 0
@@ -127,7 +126,7 @@ class Game:
             for j in range(len(self.board_array[0])):
                 if (
                     self.board_array[i][j] in playerPieces
-                    and self.get_valid_moves_jumps(i, j, self.board_array) != []
+                    and self.get_valid_moves(i, j, self.board_array) != []
                 ):
                     return False
 
@@ -166,16 +165,16 @@ class Game:
     Returns a list of tuples with the new possible possition (x, y) and [removed piece]
     """
 
-    def get_valid_moves_jumps(self, x1, y1, board_array):
+    def get_valid_moves(self, x1, y1, board_array):
         final_moves = []
-        single_jump_moves = self.get_valid_moves(x1, y1, board_array)
+        single_jump_moves = self.get_valid_moves_no_jumps(x1, y1, board_array)
 
         for x2, y2, removed_pieces in single_jump_moves:
             final_moves.append((x2, y2, removed_pieces))
             if removed_pieces != []:
-                board_array_copy = board_array.copy()
+                board_array_copy = deepcopy(board_array)
                 board_array_copy[x2][y2] = board_array[x1][y1]
-                second_moves = self.get_valid_moves_jumps(x2, y2, board_array_copy)
+                second_moves = self.get_valid_moves(x2, y2, board_array_copy)
                 for x3, y3, removed_pieces2 in second_moves:
                     if removed_pieces2 != []:
                         final_moves.append((x3, y3, removed_pieces + removed_pieces2))
@@ -186,8 +185,8 @@ class Game:
     Returns a list of tuples with the new possible possition x, y and [removed piece]
     """
 
-    def get_valid_moves(self, x, y, board_array):
-        board_array = board_array.copy()
+    def get_valid_moves_no_jumps(self, x, y, board_array):
+        board_array = deepcopy(board_array)
         moves = []
         if board_array[x][y] in (1, 3):  # White Non-king Movement
             up_x = x - 1
