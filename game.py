@@ -2,6 +2,8 @@ import time
 import pygame
 from board_graphics import Graphics
 from copy import deepcopy
+from minimax import algorithm
+
 
 class Game:
     def __init__(self):
@@ -54,10 +56,9 @@ class Game:
 
         # AI MOVE:
         if self.status == 2:
-            Graphics.draw_board(self.board_array)
             self.make_AI_move()
-            # TODO: uncomment:
             self.status = 1
+            Graphics.draw_board(self.board_array)
             return
 
         # USER MOVE
@@ -80,7 +81,6 @@ class Game:
     """
 
     def white_made_selection(
-        
         self,
         location,
     ):
@@ -94,24 +94,29 @@ class Game:
 
         if self.board_array[x][y] == 0 and self.selected_piece != (-1, -1):
             # check if the move is valid:
-            moves = get_valid_moves(
+            moves = algorithm.get_valid_moves(
                 self.selected_piece[0], self.selected_piece[1], self.board_array
             )
-            print(moves)
             for x1, y1, rm in moves:
                 if x1 == x and y1 == y:
-                    print("making x, y into white: ", x, y)
-                    self.board_array[x][y] = 1
+                    self.board_array[x][y] = self.board_array[self.selected_piece[0]][
+                        self.selected_piece[1]
+                    ]
+                    self.king_piece(x, y)
                     for x_rm, y_rm in rm:
                         self.board_array[x_rm][y_rm] = 0
                     self.board_array[self.selected_piece[0]][self.selected_piece[1]] = 0
                     self.selected_piece = (-1, -1)
+
+                    # Make it the AI move next:
+                    # Make it the AI move next:
+                    # TODO: uncomment:
+                    # Make it the AI move next:
+                    # TODO: uncomment:
+                    self.status = 2
                     break
 
-            # Make it the AI move next:
-            # TODO: uncomment:
-            self.status = 2
-        elif self.board_array[x][y] == 1:
+        elif self.board_array[x][y] == 1 or self.board_array[x][y] == 3:
             self.selected_piece = (x, y)
 
     """
@@ -128,7 +133,7 @@ class Game:
             for j in range(len(self.board_array[0])):
                 if (
                     self.board_array[i][j] in playerPieces
-                    and get_valid_moves(i, j, self.board_array) != []
+                    and algorithm.get_valid_moves(i, j, self.board_array) != []
                 ):
                     return False
 
@@ -138,24 +143,20 @@ class Game:
             print("Black has no moves, white wins!")
         return True
 
-    
-
     def king_piece(self, x, y):
         if (self.board_array[x][y]) == 1 and x == 0:
             self.board_array[x][y] = 3
         elif (self.board_array[x][y]) == 2 and x == 7:
             self.board_array[x][y] = 4
         return
-    
-    
 
     """
     Makes the AI move using mini-max without pruning
     """
 
     def make_AI_move(self):
-        # TODO
-        eval, new_board = minimax(self.board_array, 3, False)
+        eval, new_board = algorithm.minimax(self.board_array, 4, False)
+        print(new_board)
         self.board_array = new_board
         return
 
@@ -166,16 +167,6 @@ class Game:
     def make_AI_move_pruning(self):
         # TODO
         return
-
-    
-    """
-    Returns the board array
-    """
-
-    def get_board(self):
-        return self.board_array
-
-
 
 
 # start the game
