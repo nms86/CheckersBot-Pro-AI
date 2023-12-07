@@ -4,6 +4,10 @@ from board_graphics import Graphics
 from copy import deepcopy
 
 
+def helper():
+    return
+
+
 class Game:
     def __init__(self):
         self.selected_piece = (-1, -1)
