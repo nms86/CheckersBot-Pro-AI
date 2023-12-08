@@ -60,7 +60,7 @@ class Game:
 
         # AI MOVE:
         if self.status == 2:
-            self.make_AI_move()
+            self.make_AI_move_pruning()
             self.status = 1
             Graphics.draw_board(self.board_array)
             return
@@ -77,6 +77,8 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.white_made_selection(location)
                 Graphics.draw_board(self.board_array)
+                Graphics.draw_moves(algorithm.get_valid_moves(self.selected_piece[0], self.selected_piece[1], self.board_array))
+                
 
     """
     When the user clicks with the mouse:
@@ -155,16 +157,19 @@ class Game:
     """
 
     def make_AI_move(self):
-        self.board_array = algorithm.minimax(self.board_array, 5, False)[1]
+        _, new_board = algorithm.minimax(self.board_array, 5, False)
+        #print(new_board)
+        self.board_array = new_board
+        return
 
     """
     Makes the AI move using mini-max with pruning
     """
 
     def make_AI_move_pruning(self):
-        self.board_array = algorithm.minimax_pruning(
-            self.board_array, 5, False, float("-inf"), float("inf")
-        )[1]
+        _, new_board = algorithm.alpha_beta(self.board_array, 6, float('-inf'), float('inf'), False)
+        self.board_array = new_board
+        return
 
 
 # start the game

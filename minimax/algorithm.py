@@ -148,7 +148,7 @@ def get_valid_moves_no_jumps(x, y, board_array):
 
 """
 Evaluate the board passed in, and returns an integer representing how good
-the board is for the black pieces. A larger integer should be better for black. 
+the board is for the black pieces. A larger integer should be better for white. 
 """
 
 
@@ -281,46 +281,50 @@ def minimax(board, depth, max_player):
     if max_player:
         maxSoFar = float("-inf")
         for move in get_all_moves(board, 1):
-            if maxSoFar < minimax(move, depth - 1, False)[0]:
+            evaluation = minimax(move, depth - 1, False)[0]
+            if maxEval < evaluation:
+                maxEval = evaluation
                 best_move = move
 
         return maxSoFar, best_move
     else:
         minSoFar = float("inf")
         for move in get_all_moves(board, 2):
-            if minSoFar > minimax(move, depth - 1, True)[0]:
+            evaluation = minimax(move, depth - 1, True)[0]
+            if minEval > evaluation:
+                minEval = evaluation
                 best_move = move
 
-        return minSoFar, best_move
+        return minEval, best_move
 
-
-def minimax_pruning(board, depth, max_player, alpha, beta):
-    if depth == 0 or is_win_or_lose(board):
+def alpha_beta(board, depth, alpha, beta, max_player):
+    if depth == 0 or is_win_or_lose(board) == True:
         return evaluate_board_1(board), board
-
+    
     best_move = None
 
     if max_player:
-        maxSoFar = float("-inf")
+        maxEval = float("-inf")
         for move in get_all_moves(board, 1):
-            if maxSoFar < minimax_pruning(move, depth - 1, False, alpha, beta)[0]:
+            evaluation = alpha_beta(move, depth - 1, alpha, beta, False)[0]
+            if maxEval < evaluation:
                 best_move = move
-
-            alpha = max(alpha, maxSoFar)
-            # Alpha Beta Pruning
-            if beta < alpha:
+                maxEval = evaluation
+            alpha = max(alpha, evaluation)
+            if beta <= alpha:
                 break
 
-        return maxSoFar, best_move
-    else:
-        minSoFar = float("inf")
+        return maxEval, best_move
+    
+    else: 
+        minEval = float("inf")
         for move in get_all_moves(board, 2):
-            if minSoFar > minimax_pruning(move, depth - 1, True, alpha, beta)[0]:
+            evaluation = alpha_beta(move, depth - 1, alpha, beta, True)[0]
+            if minEval > evaluation:
                 best_move = move
-
-            beta = max(beta, minSoFar)
-            # Alpha Beta Pruning
-            if beta < alpha:
+                minEval = evaluation
+            beta = min(beta, evaluation)
+            if beta <= alpha:
                 break
 
-        return minSoFar, best_move
+        return minEval, best_move
