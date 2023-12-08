@@ -15,9 +15,9 @@ class Game:
 
         # 1 = white, 2 = black, 3 = white king, 4 = black king
         self.board_array = [
-            [0, 2, 0, 2, 0, 2, 0, 2],
+            [0, 2, 0, 3, 0, 2, 0, 2],
             [2, 0, 2, 0, 2, 0, 2, 0],
-            [0, 2, 0, 2, 0, 2, 0, 2],
+            [0, 0, 0, 2, 0, 0, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [1, 0, 1, 0, 1, 0, 1, 0],
@@ -109,10 +109,6 @@ class Game:
                     self.selected_piece = (-1, -1)
 
                     # Make it the AI move next:
-                    # Make it the AI move next:
-                    # TODO: uncomment:
-                    # Make it the AI move next:
-                    # TODO: uncomment:
                     self.status = 2
                     break
 
@@ -157,6 +153,7 @@ class Game:
     def make_AI_move(self):
         eval, new_board = algorithm.minimax(self.board_array, 4, False)
         self.board_array = new_board
+        print(algorithm.evaluate_board(self.board_array))
         return
 
     """

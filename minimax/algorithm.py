@@ -65,29 +65,29 @@ def get_valid_moves_no_jumps(x, y, board_array):
         down_x = x + 1
         left_y = y - 1
         right_y = y + 1
-        if down_x >= 0 and left_y >= 0:  # Left Backwards Diagonal Non-Capture Move
+        if down_x < 8 and left_y >= 0:  # Left Backwards Diagonal Non-Capture Move
             if board_array[down_x][left_y] == 0:
                 moves.append((down_x, left_y, []))
             if board_array[down_x][left_y] in (
                 2,
                 4,
             ):  # Left Backwards Diagonal Capture Move
-                if (down_x - 1 >= 0 and left_y - 1 >= 0) and board_array[down_x - 1][
+                if (down_x + 1 < 8 and left_y - 1 >= 0) and board_array[down_x + 1][
                     left_y - 1
                 ] == 0:
-                    moves.append((down_x - 1, left_y - 1, [(down_x, left_y)]))
+                    moves.append((down_x + 1, left_y - 1, [(down_x, left_y)]))
 
-        if down_x >= 0 and right_y < 8:  # Right Backwards Diagonal Non-Capture Move
+        if down_x < 8 and right_y < 8:  # Right Backwards Diagonal Non-Capture Move
             if board_array[down_x][right_y] == 0:
                 moves.append((down_x, right_y, []))
             if board_array[down_x][right_y] in (
                 2,
                 4,
             ):  # Right Backwards Diagonal Capture Move
-                if (down_x - 1 >= 0 and right_y + 1 < 8) and board_array[down_x - 1][
+                if (down_x + 1 < 8 and right_y + 1 < 8) and board_array[down_x + 1][
                     right_y + 1
                 ] == 0:
-                    moves.append((down_x - 1, right_y + 1, [(down_x, right_y)]))
+                    moves.append((down_x + 1, right_y + 1, [(down_x, right_y)]))
 
     if board_array[x][y] in (2, 4):  # Black Non-king Movement
         down_x = x + 1
@@ -156,7 +156,8 @@ def evaluate_board(board):
     return (
         num_pieces(board, 1)
         - num_pieces(board, 2)
-        + (num_pieces(board, 3) - num_pieces(board, 4)) * 1.5
+        + num_pieces(board, 3) * 1.5
+        - num_pieces(board, 4) * 1.5
     )
 
 
