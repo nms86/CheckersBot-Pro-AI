@@ -65,29 +65,29 @@ def get_valid_moves_no_jumps(x, y, board_array):
         down_x = x + 1
         left_y = y - 1
         right_y = y + 1
-        if down_x < 8 and left_y >= 0:  # Left Backwards Diagonal Non-Capture Move , BUG HERE, down_x >= 0
+        if down_x < 8 and left_y >= 0:  # Left Backwards Diagonal Non-Capture Move
             if board_array[down_x][left_y] == 0:
                 moves.append((down_x, left_y, []))
             if board_array[down_x][left_y] in (
                 2,
                 4,
             ):  # Left Backwards Diagonal Capture Move
-                if (down_x - 1 >= 0 and left_y - 1 >= 0) and board_array[down_x - 1][
+                if (down_x + 1 < 8 and left_y - 1 >= 0) and board_array[down_x + 1][
                     left_y - 1
                 ] == 0:
-                    moves.append((down_x - 1, left_y - 1, [(down_x, left_y)]))
+                    moves.append((down_x + 1, left_y - 1, [(down_x, left_y)]))
 
-        if down_x >= 0 and right_y < 8:  # Right Backwards Diagonal Non-Capture Move
+        if down_x < 8 and right_y < 8:  # Right Backwards Diagonal Non-Capture Move
             if board_array[down_x][right_y] == 0:
                 moves.append((down_x, right_y, []))
             if board_array[down_x][right_y] in (
                 2,
                 4,
             ):  # Right Backwards Diagonal Capture Move
-                if (down_x - 1 >= 0 and right_y + 1 < 8) and board_array[down_x - 1][
+                if (down_x + 1 < 8 and right_y + 1 < 8) and board_array[down_x + 1][
                     right_y + 1
                 ] == 0:
-                    moves.append((down_x - 1, right_y + 1, [(down_x, right_y)]))
+                    moves.append((down_x + 1, right_y + 1, [(down_x, right_y)]))
 
     if board_array[x][y] in (2, 4):  # Black Non-king Movement
         down_x = x + 1
@@ -148,15 +148,32 @@ def get_valid_moves_no_jumps(x, y, board_array):
 
 """
 Evaluate the board passed in, and returns an integer representing how good
-the board is for the black pieces. A larger integer should be better for black. 
+the board is for the black pieces. A larger integer should be better for white. 
 """
 
 
-def evaluate_board(board):
+def evaluate_board_1(board):
     return (
         num_pieces(board, 1)
         - num_pieces(board, 2)
-        + (num_pieces(board, 3) - num_pieces(board, 4)) * 1.5
+        + num_pieces(board, 3) * 2
+        - num_pieces(board, 4) * 2
+    )
+
+
+def evaluate_board_2(board, endGame):
+    if endGame:
+        # game over in this board
+        if not get_all_moves(board, 1):
+            return float("inf")
+        if not get_all_moves(board, 2):
+            return float("-inf")
+
+    return (
+        num_pieces(board, 1)
+        - num_pieces(board, 2)
+        + num_pieces(board, 3) * 2
+        - num_pieces(board, 4) * 2
     )
 
 
@@ -204,16 +221,6 @@ def move_piece(board, old_x, old_y, new_x, new_y):
 
 
 """
-Removes a piece from the board at location x, y
-"""
-
-
-def remove_piece(board, x, y):
-    board[x][y] = 0
-    return board
-
-
-"""
 Returns the number of pieces of the color passed in
 """
 
@@ -237,7 +244,7 @@ def sim_move(x, y, move, board, capture):
     board = move_piece(board, x, y, move[0], move[1])
     if capture:
         for x, y in capture:
-            board = remove_piece(board, x, y)
+            board[x][y] = 0
     return board
 
 
@@ -266,22 +273,22 @@ def is_win_or_lose(board):
 
 
 def minimax(board, depth, max_player):
-    if depth == 0 or is_win_or_lose(board) == True:
-        return evaluate_board(board), board
+    if depth == 0 or is_win_or_lose(board):
+        return evaluate_board_1(board), board
 
     best_move = None
 
     if max_player:
-        maxEval = float("-inf")
+        maxSoFar = float("-inf")
         for move in get_all_moves(board, 1):
             evaluation = minimax(move, depth - 1, False)[0]
             if maxEval < evaluation:
                 maxEval = evaluation
                 best_move = move
 
-        return maxEval, best_move
+        return maxSoFar, best_move
     else:
-        minEval = float("inf")
+        minSoFar = float("inf")
         for move in get_all_moves(board, 2):
             evaluation = minimax(move, depth - 1, True)[0]
             if minEval > evaluation:
@@ -292,7 +299,7 @@ def minimax(board, depth, max_player):
 
 def alpha_beta(board, depth, alpha, beta, max_player):
     if depth == 0 or is_win_or_lose(board) == True:
-        return evaluate_board(board), board
+        return evaluate_board_1(board), board
     
     best_move = None
 

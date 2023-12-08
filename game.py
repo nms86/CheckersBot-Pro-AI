@@ -111,10 +111,6 @@ class Game:
                     self.selected_piece = (-1, -1)
 
                     # Make it the AI move next:
-                    # Make it the AI move next:
-                    # TODO: uncomment:
-                    # Make it the AI move next:
-                    # TODO: uncomment:
                     self.status = 2
                     break
 
