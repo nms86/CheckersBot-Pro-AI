@@ -152,12 +152,28 @@ the board is for the black pieces. A larger integer should be better for black.
 """
 
 
-def evaluate_board(board):
+def evaluate_board_1(board):
     return (
         num_pieces(board, 1)
         - num_pieces(board, 2)
-        + num_pieces(board, 3) * 1.5
-        - num_pieces(board, 4) * 1.5
+        + num_pieces(board, 3) * 2
+        - num_pieces(board, 4) * 2
+    )
+
+
+def evaluate_board_2(board, endGame):
+    if endGame:
+        # game over in this board
+        if not get_all_moves(board, 1):
+            return float("inf")
+        if not get_all_moves(board, 2):
+            return float("-inf")
+
+    return (
+        num_pieces(board, 1)
+        - num_pieces(board, 2)
+        + num_pieces(board, 3) * 2
+        - num_pieces(board, 4) * 2
     )
 
 
@@ -205,16 +221,6 @@ def move_piece(board, old_x, old_y, new_x, new_y):
 
 
 """
-Removes a piece from the board at location x, y
-"""
-
-
-def remove_piece(board, x, y):
-    board[x][y] = 0
-    return board
-
-
-"""
 Returns the number of pieces of the color passed in
 """
 
@@ -238,7 +244,7 @@ def sim_move(x, y, move, board, capture):
     board = move_piece(board, x, y, move[0], move[1])
     if capture:
         for x, y in capture:
-            board = remove_piece(board, x, y)
+            board[x][y] = 0
     return board
 
 
@@ -267,24 +273,54 @@ def is_win_or_lose(board):
 
 
 def minimax(board, depth, max_player):
-    if depth == 0 or is_win_or_lose(board) == True:
-        return evaluate_board(board), board
+    if depth == 0 or is_win_or_lose(board):
+        return evaluate_board_1(board), board
 
     best_move = None
 
     if max_player:
-        maxEval = float("-inf")
+        maxSoFar = float("-inf")
         for move in get_all_moves(board, 1):
-            evaluation = minimax(move, depth - 1, False)[0]
-            if maxEval < evaluation:
+            if maxSoFar < minimax(move, depth - 1, False)[0]:
                 best_move = move
 
-        return maxEval, best_move
+        return maxSoFar, best_move
     else:
-        minEval = float("inf")
+        minSoFar = float("inf")
         for move in get_all_moves(board, 2):
-            evaluation = minimax(move, depth - 1, True)[0]
-            if minEval > evaluation:
+            if minSoFar > minimax(move, depth - 1, True)[0]:
                 best_move = move
 
-        return minEval, best_move
+        return minSoFar, best_move
+
+
+def minimax_pruning(board, depth, max_player, alpha, beta):
+    if depth == 0 or is_win_or_lose(board):
+        return evaluate_board_1(board), board
+
+    best_move = None
+
+    if max_player:
+        maxSoFar = float("-inf")
+        for move in get_all_moves(board, 1):
+            if maxSoFar < minimax_pruning(move, depth - 1, False, alpha, beta)[0]:
+                best_move = move
+
+            alpha = max(alpha, maxSoFar)
+            # Alpha Beta Pruning
+            if beta < alpha:
+                break
+
+        return maxSoFar, best_move
+    else:
+        minSoFar = float("inf")
+        for move in get_all_moves(board, 2):
+            if minSoFar > minimax_pruning(move, depth - 1, True, alpha, beta)[0]:
+                best_move = move
+
+            beta = max(beta, minSoFar)
+            # Alpha Beta Pruning
+            if beta < alpha:
+                break
+
+        return minSoFar, best_move

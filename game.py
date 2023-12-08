@@ -15,9 +15,9 @@ class Game:
 
         # 1 = white, 2 = black, 3 = white king, 4 = black king
         self.board_array = [
-            [0, 2, 0, 3, 0, 2, 0, 2],
+            [0, 2, 0, 2, 0, 2, 0, 2],
             [2, 0, 2, 0, 2, 0, 2, 0],
-            [0, 0, 0, 2, 0, 0, 0, 2],
+            [0, 2, 0, 2, 0, 2, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [1, 0, 1, 0, 1, 0, 1, 0],
@@ -151,18 +151,16 @@ class Game:
     """
 
     def make_AI_move(self):
-        eval, new_board = algorithm.minimax(self.board_array, 4, False)
-        self.board_array = new_board
-        print(algorithm.evaluate_board(self.board_array))
-        return
+        self.board_array = algorithm.minimax(self.board_array, 5, False)[1]
 
     """
     Makes the AI move using mini-max with pruning
     """
 
     def make_AI_move_pruning(self):
-        # TODO
-        return
+        self.board_array = algorithm.minimax_pruning(
+            self.board_array, 5, False, float("-inf"), float("inf")
+        )[1]
 
 
 # start the game
