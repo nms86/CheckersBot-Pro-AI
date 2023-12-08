@@ -5,6 +5,10 @@ from copy import deepcopy
 from minimax import algorithm
 
 
+def helper():
+    return
+
+
 class Game:
     def __init__(self):
         self.selected_piece = (-1, -1)
