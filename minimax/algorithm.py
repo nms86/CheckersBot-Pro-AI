@@ -65,7 +65,7 @@ def get_valid_moves_no_jumps(x, y, board_array):
         down_x = x + 1
         left_y = y - 1
         right_y = y + 1
-        if down_x >= 0 and left_y >= 0:  # Left Backwards Diagonal Non-Capture Move
+        if down_x < 8 and left_y >= 0:  # Left Backwards Diagonal Non-Capture Move , BUG HERE, down_x >= 0
             if board_array[down_x][left_y] == 0:
                 moves.append((down_x, left_y, []))
             if board_array[down_x][left_y] in (
@@ -276,6 +276,7 @@ def minimax(board, depth, max_player):
         for move in get_all_moves(board, 1):
             evaluation = minimax(move, depth - 1, False)[0]
             if maxEval < evaluation:
+                maxEval = evaluation
                 best_move = move
 
         return maxEval, best_move
@@ -284,6 +285,39 @@ def minimax(board, depth, max_player):
         for move in get_all_moves(board, 2):
             evaluation = minimax(move, depth - 1, True)[0]
             if minEval > evaluation:
+                minEval = evaluation
                 best_move = move
+
+        return minEval, best_move
+
+def alpha_beta(board, depth, alpha, beta, max_player):
+    if depth == 0 or is_win_or_lose(board) == True:
+        return evaluate_board(board), board
+    
+    best_move = None
+
+    if max_player:
+        maxEval = float("-inf")
+        for move in get_all_moves(board, 1):
+            evaluation = alpha_beta(move, depth - 1, alpha, beta, False)[0]
+            if maxEval < evaluation:
+                best_move = move
+                maxEval = evaluation
+            alpha = max(alpha, evaluation)
+            if beta <= alpha:
+                break
+
+        return maxEval, best_move
+    
+    else: 
+        minEval = float("inf")
+        for move in get_all_moves(board, 2):
+            evaluation = alpha_beta(move, depth - 1, alpha, beta, True)[0]
+            if minEval > evaluation:
+                best_move = move
+                minEval = evaluation
+            beta = min(beta, evaluation)
+            if beta <= alpha:
+                break
 
         return minEval, best_move
