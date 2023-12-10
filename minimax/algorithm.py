@@ -1,5 +1,5 @@
 from copy import deepcopy
-
+import random
 
 """
 Gets all possible moves from a position, forcing double/triple jumps
@@ -151,13 +151,13 @@ the board is for the black pieces. A larger integer should be better for white.
 """
 
 
-def evaluate_board(board, piece_weight, king_weight, blocker_weight):
+def evaluate_board(board, piece_weight, king_weight, blocker_weight, noise):
     return (
         num_pieces(board, 1) * piece_weight
         - num_pieces(board, 2) * piece_weight
         + num_pieces(board, 3) * king_weight
         - num_pieces(board, 4) * king_weight
-    )
+    ) * 99 + noise * random.randrange(0, 9)
 
 
 def get_piece_locations(board, color):
@@ -255,9 +255,9 @@ def is_win_or_lose(board):
     return False
 
 
-def minimax(board, depth, max_player, w1, w2, w3):
+def minimax(board, depth, max_player, w1, w2, w3, noise):
     if depth == 0 or is_win_or_lose(board):
-        return evaluate_board(board, w1, w2, w3), board
+        return evaluate_board(board, w1, w2, w3, noise), board
 
     best_move = None
 
@@ -281,16 +281,18 @@ def minimax(board, depth, max_player, w1, w2, w3):
         return minSoFar, best_move
 
 
-def alpha_beta(board, depth, alpha, beta, max_player, w1, w2, w3):
+def alpha_beta(board, depth, alpha, beta, max_player, w1, w2, w3, noise):
     if depth == 0 or is_win_or_lose(board):
-        return evaluate_board(board, w1, w2, w3), board
+        return evaluate_board(board, w1, w2, w3, noise), board
 
     best_move = None
 
     if max_player:
         maxSoFar = float("-inf")
         for move in get_all_moves(board, 1):
-            evaluation = alpha_beta(move, depth - 1, alpha, beta, False, w1, w2, w3)[0]
+            evaluation = alpha_beta(
+                move, depth - 1, alpha, beta, False, w1, w2, w3, noise
+            )[0]
             if maxSoFar < evaluation:
                 best_move = move
                 maxSoFar = evaluation
@@ -303,7 +305,9 @@ def alpha_beta(board, depth, alpha, beta, max_player, w1, w2, w3):
     else:
         minSoFar = float("inf")
         for move in get_all_moves(board, 2):
-            evaluation = alpha_beta(move, depth - 1, alpha, beta, True, w1, w2, w3)[0]
+            evaluation = alpha_beta(
+                move, depth - 1, alpha, beta, True, w1, w2, w3, noise
+            )[0]
             if minSoFar > evaluation:
                 best_move = move
                 minSoFar = evaluation

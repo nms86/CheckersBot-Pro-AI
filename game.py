@@ -38,33 +38,32 @@ class Game:
 
         # loop while the window is not closed
         while self.status != 0:
-            self.AI_event_loop()
-            # self.event_loop()
+            # self.AI_event_loop()
+            self.event_loop()
 
         pygame.quit()
 
     def AI_event_loop(self):
+        noise = 0.25  # percentage from 0 to 1
+
         if self.status == 1:
-            self.make_AI_move(True, True, 3, 1, 2, 0)
-            self.status = 1
+            self.make_AI_move(True, True, 3, 1, 2, 0, noise)
+            self.status = 2
+            self.num_moves += 1
         if self.status == 2:
-            self.make_AI_move(False, True, 3, 1, 2, 0)
+            self.make_AI_move(False, True, 3, 1, 2, 0, noise)
             self.status = 1
+            self.num_moves += 1
 
-        self.num_moves += 1
-
-        if self.num_moves >= 500:
+        if self.num_moves >= 100:
             self.status = 0
-            print(
-                algorithm.num_pieces(self.board_array, 1)
-                + algorithm.num_pieces(self.board_array, 3)
-            )
-            print(
-                algorithm.num_pieces(self.board_array, 2)
-                + algorithm.num_pieces(self.board_array, 4)
-            )
-            time.sleep(5)
-            return
+            white_pieces = algorithm.num_pieces(
+                self.board_array, 1
+            ) + algorithm.num_pieces(self.board_array, 3)
+            black_pieces = algorithm.num_pieces(
+                self.board_array, 2
+            ) + algorithm.num_pieces(self.board_array, 4)
+            print(white_pieces, black_pieces)
 
     """
     This is what loops repeatedly that monitors for user moves
@@ -81,7 +80,7 @@ class Game:
 
         # AI MOVE:
         if self.status == 2:
-            self.make_AI_move(False, True, 3, 1, 2, 0)
+            self.make_AI_move(False, True, 3, 1, 2, 0, 0)
             self.status = 1
             Graphics.draw_board(self.board_array)
             return
@@ -180,7 +179,7 @@ class Game:
     Makes the AI move using mini-max without pruning
     """
 
-    def make_AI_move(self, isWhite, prune, depth, w1, w2, w3):
+    def make_AI_move(self, isWhite, prune, depth, w1, w2, w3, noise):
         if prune:
             self.board_array = algorithm.alpha_beta(
                 self.board_array,
@@ -191,10 +190,11 @@ class Game:
                 w1,
                 w2,
                 w3,
+                noise,
             )[1]
         else:
             self.board_array = algorithm.minimax(
-                self.board_array, depth, isWhite, w1, w2, w3
+                self.board_array, depth, isWhite, w1, w2, w3, noise
             )[1]
 
 
