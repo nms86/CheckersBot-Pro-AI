@@ -267,7 +267,7 @@ def get_all_moves(board, color):  # May be able to replace with get_valid_boards
 
 
 def is_win_or_lose(board):
-    if not get_all_moves(board, 1) and not get_all_moves(board, 2):
+    if not get_all_moves(board, 1) or not get_all_moves(board, 2):
         return True
     return False
 
@@ -313,7 +313,6 @@ def alpha_beta(board, depth, alpha, beta, max_player):
             alpha = max(alpha, evaluation)
             if beta <= alpha:
                 break
-
         return maxEval, best_move
     
     else: 
