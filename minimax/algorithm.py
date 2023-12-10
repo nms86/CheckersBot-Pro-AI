@@ -297,10 +297,11 @@ def minimax(board, depth, max_player):
 
         return minEval, best_move
 
+
 def alpha_beta(board, depth, alpha, beta, max_player):
     if depth == 0 or is_win_or_lose(board) == True:
         return evaluate_board_1(board), board
-    
+
     best_move = None
 
     if max_player:
@@ -314,8 +315,8 @@ def alpha_beta(board, depth, alpha, beta, max_player):
             if beta <= alpha:
                 break
         return maxEval, best_move
-    
-    else: 
+
+    else:
         minEval = float("inf")
         for move in get_all_moves(board, 2):
             evaluation = alpha_beta(move, depth - 1, alpha, beta, True)[0]
