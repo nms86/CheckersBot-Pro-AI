@@ -1,12 +1,7 @@
 import time
 import pygame
 from board_graphics import Graphics
-from copy import deepcopy
 from minimax import algorithm
-
-
-def helper():
-    return
 
 
 class Game:
@@ -29,7 +24,7 @@ class Game:
             [1, 0, 1, 0, 1, 0, 1, 0],
         ]
 
-
+        self.num_moves = 0
 
     """
     This drives the whole game
@@ -43,9 +38,33 @@ class Game:
 
         # loop while the window is not closed
         while self.status != 0:
-            self.event_loop()
+            self.AI_event_loop()
+            # self.event_loop()
 
         pygame.quit()
+
+    def AI_event_loop(self):
+        if self.status == 1:
+            self.make_AI_move(True, True, 3, 1, 2, 0)
+            self.status = 1
+        if self.status == 2:
+            self.make_AI_move(False, True, 3, 1, 2, 0)
+            self.status = 1
+
+        self.num_moves += 1
+
+        if self.num_moves >= 500:
+            self.status = 0
+            print(
+                algorithm.num_pieces(self.board_array, 1)
+                + algorithm.num_pieces(self.board_array, 3)
+            )
+            print(
+                algorithm.num_pieces(self.board_array, 2)
+                + algorithm.num_pieces(self.board_array, 4)
+            )
+            time.sleep(5)
+            return
 
     """
     This is what loops repeatedly that monitors for user moves
@@ -62,7 +81,7 @@ class Game:
 
         # AI MOVE:
         if self.status == 2:
-            self.make_AI_move_pruning()
+            self.make_AI_move(False, True, 3, 1, 2, 0)
             self.status = 1
             Graphics.draw_board(self.board_array)
             return
@@ -79,8 +98,11 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.white_made_selection(location)
                 Graphics.draw_board(self.board_array)
-                Graphics.draw_moves(algorithm.get_valid_moves(self.selected_piece[0], self.selected_piece[1], self.board_array))
-                
+                Graphics.draw_moves(
+                    algorithm.get_valid_moves(
+                        self.selected_piece[0], self.selected_piece[1], self.board_array
+                    )
+                )
 
     """
     When the user clicks with the mouse:
@@ -158,20 +180,22 @@ class Game:
     Makes the AI move using mini-max without pruning
     """
 
-    def make_AI_move(self):
-        _, new_board = algorithm.minimax(self.board_array, 5, False)
-        #print(new_board)
-        self.board_array = new_board
-        return
-
-    """
-    Makes the AI move using mini-max with pruning
-    """
-
-    def make_AI_move_pruning(self):
-        _, new_board = algorithm.alpha_beta(self.board_array, 6, float('-inf'), float('inf'), False)
-        self.board_array = new_board
-        return
+    def make_AI_move(self, isWhite, prune, depth, w1, w2, w3):
+        if prune:
+            self.board_array = algorithm.alpha_beta(
+                self.board_array,
+                depth,
+                float("-inf"),
+                float("inf"),
+                isWhite,
+                w1,
+                w2,
+                w3,
+            )[1]
+        else:
+            self.board_array = algorithm.minimax(
+                self.board_array, depth, isWhite, w1, w2, w3
+            )[1]
 
 
 # start the game

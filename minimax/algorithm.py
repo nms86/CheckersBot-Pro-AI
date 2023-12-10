@@ -1,5 +1,4 @@
 from copy import deepcopy
-import pygame
 
 
 """
@@ -152,28 +151,12 @@ the board is for the black pieces. A larger integer should be better for white.
 """
 
 
-def evaluate_board_1(board):
+def evaluate_board(board, piece_weight, king_weight, blocker_weight):
     return (
-        num_pieces(board, 1)
-        - num_pieces(board, 2)
-        + num_pieces(board, 3) * 2
-        - num_pieces(board, 4) * 2
-    )
-
-
-def evaluate_board_2(board, endGame):
-    if endGame:
-        # game over in this board
-        if not get_all_moves(board, 1):
-            return float("inf")
-        if not get_all_moves(board, 2):
-            return float("-inf")
-
-    return (
-        num_pieces(board, 1)
-        - num_pieces(board, 2)
-        + num_pieces(board, 3) * 2
-        - num_pieces(board, 4) * 2
+        num_pieces(board, 1) * piece_weight
+        - num_pieces(board, 2) * piece_weight
+        + num_pieces(board, 3) * king_weight
+        - num_pieces(board, 4) * king_weight
     )
 
 
@@ -272,59 +255,61 @@ def is_win_or_lose(board):
     return False
 
 
-def minimax(board, depth, max_player):
+def minimax(board, depth, max_player, w1, w2, w3):
     if depth == 0 or is_win_or_lose(board):
-        return evaluate_board_1(board), board
+        return evaluate_board(board, w1, w2, w3), board
 
     best_move = None
 
     if max_player:
         maxSoFar = float("-inf")
         for move in get_all_moves(board, 1):
-            evaluation = minimax(move, depth - 1, False)[0]
-            if maxEval < evaluation:
-                maxEval = evaluation
+            evaluation = minimax(move, depth - 1, False, w1, w2, w3)[0]
+            if maxSoFar < evaluation:
+                maxSoFar = evaluation
                 best_move = move
 
         return maxSoFar, best_move
     else:
         minSoFar = float("inf")
         for move in get_all_moves(board, 2):
-            evaluation = minimax(move, depth - 1, True)[0]
-            if minEval > evaluation:
-                minEval = evaluation
+            evaluation = minimax(move, depth - 1, True, w1, w2, w3)[0]
+            if minSoFar > evaluation:
+                minSoFar = evaluation
                 best_move = move
 
-        return minEval, best_move
+        return minSoFar, best_move
 
 
-def alpha_beta(board, depth, alpha, beta, max_player):
-    if depth == 0 or is_win_or_lose(board) == True:
-        return evaluate_board_1(board), board
+def alpha_beta(board, depth, alpha, beta, max_player, w1, w2, w3):
+    if depth == 0 or is_win_or_lose(board):
+        return evaluate_board(board, w1, w2, w3), board
 
     best_move = None
 
     if max_player:
-        maxEval = float("-inf")
+        maxSoFar = float("-inf")
         for move in get_all_moves(board, 1):
-            evaluation = alpha_beta(move, depth - 1, alpha, beta, False)[0]
-            if maxEval < evaluation:
+            evaluation = alpha_beta(move, depth - 1, alpha, beta, False, w1, w2, w3)[0]
+            if maxSoFar < evaluation:
                 best_move = move
-                maxEval = evaluation
+                maxSoFar = evaluation
+
             alpha = max(alpha, evaluation)
             if beta <= alpha:
                 break
-        return maxEval, best_move
+        return maxSoFar, best_move
 
     else:
-        minEval = float("inf")
+        minSoFar = float("inf")
         for move in get_all_moves(board, 2):
-            evaluation = alpha_beta(move, depth - 1, alpha, beta, True)[0]
-            if minEval > evaluation:
+            evaluation = alpha_beta(move, depth - 1, alpha, beta, True, w1, w2, w3)[0]
+            if minSoFar > evaluation:
                 best_move = move
-                minEval = evaluation
+                minSoFar = evaluation
+
             beta = min(beta, evaluation)
             if beta <= alpha:
                 break
 
-        return minEval, best_move
+        return minSoFar, best_move

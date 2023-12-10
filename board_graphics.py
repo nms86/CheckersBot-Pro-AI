@@ -15,12 +15,19 @@ class Graphics:
             )
             Graphics.win = scrn
             pygame.display.set_caption("CheckersBot Pro AI")
-    
+
     def draw_moves(moves):
         for x, y, _ in moves:
-            pygame.draw.circle(Graphics.win, (255, 0, 0), (y * Graphics.board_square_size + 28 ,x * Graphics.board_square_size + 28), 10)
+            pygame.draw.circle(
+                Graphics.win,
+                (255, 0, 0),
+                (
+                    y * Graphics.board_square_size + 28,
+                    x * Graphics.board_square_size + 28,
+                ),
+                10,
+            )
         pygame.display.flip()
-        
 
     def draw_board(board_to_display):
         Graphics.initialize_window()
@@ -49,5 +56,3 @@ class Graphics:
                     Graphics.win.blit(black_king_piece, (x, y))
 
         pygame.display.flip()
-
-    
