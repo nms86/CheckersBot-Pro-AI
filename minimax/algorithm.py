@@ -145,6 +145,17 @@ def get_valid_moves_no_jumps(x, y, board_array):
     return moves
 
 
+def baseline_pieces(board):
+    count = 0
+    for i in board[0]:
+        if i == 2 or i == 4:
+            count -= 1
+    for i in board[7]:
+        if i == 1 or i == 3:
+            count += 1
+    return count
+
+
 """
 Evaluate the board passed in, and returns an integer representing how good
 the board is for the black pieces. A larger integer should be better for white. 
@@ -157,6 +168,7 @@ def evaluate_board(board, piece_weight, king_weight, blocker_weight, noise):
         - num_pieces(board, 2) * piece_weight
         + num_pieces(board, 3) * king_weight
         - num_pieces(board, 4) * king_weight
+        + baseline_pieces(board) * blocker_weight
     ) * 99 + noise * random.randrange(0, 9)
 
 

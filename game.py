@@ -31,8 +31,6 @@ class Game:
     """
 
     def main(self):
-        pygame.init()
-
         # draw original board
         Graphics.draw_board(self.board_array)
 
@@ -40,8 +38,6 @@ class Game:
         while self.status != 0:
             # self.AI_event_loop()
             self.event_loop()
-
-        pygame.quit()
 
     def AI_event_loop(self):
         noise = 0.25  # percentage from 0 to 1
@@ -51,11 +47,11 @@ class Game:
             self.status = 2
             self.num_moves += 1
         if self.status == 2:
-            self.make_AI_move(False, True, 3, 1, 2, 0, noise)
+            self.make_AI_move(False, True, 4, 1, 1.5, 0, noise)
             self.status = 1
             self.num_moves += 1
 
-        if self.num_moves >= 100:
+        if self.num_moves >= 50:
             self.status = 0
             white_pieces = algorithm.num_pieces(
                 self.board_array, 1
@@ -64,6 +60,10 @@ class Game:
                 self.board_array, 2
             ) + algorithm.num_pieces(self.board_array, 4)
             print(white_pieces, black_pieces)
+            if black_pieces > white_pieces:
+                print("*******")
+            if black_pieces == white_pieces:
+                print("TIE")
 
     """
     This is what loops repeatedly that monitors for user moves
@@ -80,7 +80,7 @@ class Game:
 
         # AI MOVE:
         if self.status == 2:
-            self.make_AI_move(False, True, 3, 1, 2, 0, 0)
+            self.make_AI_move(False, True, 3, 1, 1.5, 0, 0)
             self.status = 1
             Graphics.draw_board(self.board_array)
             return
